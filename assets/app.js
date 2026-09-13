@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { createRoot } from "react-dom/client";
 import { LayoutDashboard, Compass, ShieldCheck, Users, User, X, Check, Github, Trophy, Clock, ChevronRight, ChevronLeft, Sparkles, TriangleAlert as AlertTriangle, ArrowRight, Zap, MapPin, ExternalLink, FolderGit2, Send, Award, Circle, Plus, LogOut, Eye, EyeOff, Lock, Mail, Briefcase, FileCheck2, Link2, GitBranch, Target, CircleCheck as CheckCircle2, CircleX as XCircle, LoaderCircle as Loader2, BadgeCheck, TrendingUp, Filter, Bell, ClipboardList, Rocket, Swords, UserPlus, ArrowLeft, Info, RotateCcw, Camera, Upload, Trash2, UserMinus, Mic, Volume2, Maximize2, Minimize2, Image as ImageIcon } from "lucide-react";
-import { RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, ResponsiveContainer, Tooltip as RTooltip } from "recharts";
 // githubService.js is loaded as a plain <script> in index.html (see comment
 // there) and attaches its functions to window.TribeGithub — NOT imported as
 // an ES module here, because Babel-standalone's in-browser transform of this
@@ -5357,40 +5356,130 @@ function SkillRadar({
 }) {
   const data = Object.entries(coverage).map(([k, v]) => ({
     skill: k,
-    value: v
+    value: Number(v) || 0
   }));
-  return /*#__PURE__*/React.createElement(ResponsiveContainer, {
-    width: "100%",
-    height: 230
-  }, /*#__PURE__*/React.createElement(RadarChart, {
-    data: data,
-    outerRadius: "72%"
-  }, /*#__PURE__*/React.createElement(PolarGrid, {
-    stroke: "var(--line)"
-  }), /*#__PURE__*/React.createElement(PolarAngleAxis, {
-    dataKey: "skill",
-    tick: {
-      fill: "var(--text-dim)",
-      fontSize: 11
+  const [hovered, setHovered] = useState(null);
+  const size = 230;
+  const cx = size / 2;
+  const cy = size / 2;
+  const radius = 70;
+  const total = data.length || 1;
+  const getCoordinates = (index, value) => {
+    const angle = index / total * 2 * Math.PI - Math.PI / 2;
+    const r = value / 100 * radius;
+    return {
+      x: cx + r * Math.cos(angle),
+      y: cy + r * Math.sin(angle)
+    };
+  };
+  const levels = [0.25, 0.5, 0.75, 1.0];
+  const polygonPoints = data.map((d, i) => {
+    const pt = getCoordinates(i, d.value);
+    return `${pt.x.toFixed(1)},${pt.y.toFixed(1)}`;
+  }).join(" ");
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      width: "100%",
+      height: 230,
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      position: "relative"
     }
-  }), /*#__PURE__*/React.createElement(PolarRadiusAxis, {
-    tick: false,
-    axisLine: false,
-    domain: [0, 100]
-  }), /*#__PURE__*/React.createElement(Radar, {
-    dataKey: "value",
-    stroke: "var(--brand)",
-    fill: "var(--brand)",
+  }, /*#__PURE__*/React.createElement("svg", {
+    width: size,
+    height: size,
+    viewBox: `0 0 ${size} ${size}`,
+    style: {
+      overflow: "visible"
+    }
+  }, levels.map(lvl => {
+    const pts = Array.from({
+      length: total
+    }).map((_, i) => {
+      const pt = getCoordinates(i, lvl * 100);
+      return `${pt.x.toFixed(1)},${pt.y.toFixed(1)}`;
+    }).join(" ");
+    return /*#__PURE__*/React.createElement("polygon", {
+      key: lvl,
+      points: pts,
+      fill: "none",
+      stroke: "var(--line, #242B37)",
+      strokeWidth: "1",
+      strokeDasharray: lvl === 1 ? "none" : "2 2",
+      opacity: 0.6
+    });
+  }), data.map((_, i) => {
+    const pt = getCoordinates(i, 100);
+    return /*#__PURE__*/React.createElement("line", {
+      key: i,
+      x1: cx,
+      y1: cy,
+      x2: pt.x,
+      y2: pt.y,
+      stroke: "var(--line, #242B37)",
+      strokeWidth: "1",
+      opacity: 0.5
+    });
+  }), /*#__PURE__*/React.createElement("polygon", {
+    points: polygonPoints,
+    fill: "var(--brand, #FF2E7E)",
     fillOpacity: 0.22,
-    strokeWidth: 2
-  }), /*#__PURE__*/React.createElement(RTooltip, {
-    contentStyle: {
-      background: "var(--panel-2)",
-      border: "1px solid var(--line)",
-      borderRadius: 10,
-      fontSize: 12
+    stroke: "var(--brand, #FF2E7E)",
+    strokeWidth: "2"
+  }), data.map((d, i) => {
+    const pt = getCoordinates(i, d.value);
+    const isHovered = hovered === i;
+    return /*#__PURE__*/React.createElement("circle", {
+      key: i,
+      cx: pt.x,
+      cy: pt.y,
+      r: isHovered ? 5 : 3.5,
+      fill: isHovered ? "#fff" : "var(--brand, #FF2E7E)",
+      stroke: "var(--panel-2, #181D26)",
+      strokeWidth: "1.5",
+      style: {
+        cursor: "pointer",
+        transition: "all 0.15s ease"
+      },
+      onMouseEnter: () => setHovered(i),
+      onMouseLeave: () => setHovered(null)
+    });
+  }), data.map((d, i) => {
+    const angle = i / total * 2 * Math.PI - Math.PI / 2;
+    const labelRadius = radius + 22;
+    const lx = cx + labelRadius * Math.cos(angle);
+    const ly = cy + labelRadius * Math.sin(angle);
+    const textAnchor = Math.abs(Math.cos(angle)) < 0.2 ? "middle" : Math.cos(angle) > 0 ? "start" : "end";
+    return /*#__PURE__*/React.createElement("text", {
+      key: i,
+      x: lx,
+      y: ly + 4,
+      textAnchor: textAnchor,
+      fill: "var(--text-dim, #A6ADBB)",
+      fontSize: "11",
+      fontWeight: "500",
+      fontFamily: "inherit",
+      style: {
+        pointerEvents: "none",
+        userSelect: "none"
+      }
+    }, d.skill);
+  })), hovered !== null && data[hovered] && /*#__PURE__*/React.createElement("div", {
+    style: {
+      position: "absolute",
+      bottom: 10,
+      background: "var(--panel-2, #181D26)",
+      border: "1px solid var(--line, #242B37)",
+      borderRadius: 8,
+      padding: "4px 10px",
+      fontSize: 12,
+      color: "#EDEFF3",
+      fontWeight: 600,
+      boxShadow: "0 4px 12px rgba(0,0,0,0.4)",
+      pointerEvents: "none"
     }
-  })));
+  }, data[hovered].skill, ": ", data[hovered].value, "%"));
 }
 
 /* ================================================================== */
