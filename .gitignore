@@ -2,3 +2,5 @@
 .vercel
 node_modules
 *.log
+.babel-cache.js
+scratch_babel.js
