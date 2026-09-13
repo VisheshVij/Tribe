@@ -2,10 +2,10 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from "react"
 import { createRoot } from "react-dom/client";
 import {
   LayoutDashboard, Compass, ShieldCheck, Users, User, X, Check, Github,
-  Trophy, Clock, ChevronRight, ChevronLeft, Sparkles, AlertTriangle, ArrowRight,
+  Trophy, Clock, ChevronRight, ChevronLeft, Sparkles, TriangleAlert as AlertTriangle, ArrowRight,
   Zap, MapPin, ExternalLink, FolderGit2, Send, Award, Circle, Plus, LogOut,
   Eye, EyeOff, Lock, Mail, Briefcase, FileCheck2, Link2, GitBranch, Target,
-  CheckCircle2, XCircle, Loader2, BadgeCheck, TrendingUp, Filter, Bell,
+  CircleCheck as CheckCircle2, CircleX as XCircle, LoaderCircle as Loader2, BadgeCheck, TrendingUp, Filter, Bell,
   ClipboardList, Rocket, Swords, UserPlus, ArrowLeft, Info, RotateCcw,
   Camera, Upload, Trash2, UserMinus, Mic, Volume2, Maximize2, Minimize2, Image as ImageIcon
 } from "lucide-react";

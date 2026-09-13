@@ -65,20 +65,31 @@
 </div>
 
 <script>
-  // Log any startup warnings for debugging without crashing the UI
+  window.__tribe_errors = [];
   window.addEventListener('error', function(event) {
+    var detail = (event.error ? event.error.stack || event.error.message : event.message) || 'Error';
+    window.__tribe_errors.push(detail);
     console.error('[TRIBE Warning]', event.message, event.filename, event.lineno);
+  });
+  window.addEventListener('unhandledrejection', function(event) {
+    var detail = (event.reason ? event.reason.stack || event.reason.message : String(event.reason)) || 'Rejection';
+    window.__tribe_errors.push(detail);
+    console.error('[TRIBE Rejection]', event.reason);
   });
 
   // Watchdog: If React hasn't mounted after 10 seconds, provide clear recovery actions
   setTimeout(function() {
     var loadingEl = document.getElementById('root-loading');
     if (loadingEl && loadingEl.parentNode) {
+      var errInfo = window.__tribe_errors.length > 0 ?
+        '<div style="color:#FF6B6B;background:#181D26;padding:10px;border-radius:8px;font-family:monospace;font-size:11px;text-align:left;max-height:120px;overflow:auto;margin-bottom:12px;">' +
+        window.__tribe_errors.join('<br>') + '</div>' : '';
+
       loadingEl.innerHTML =
         '<div style="color:#FF6B6B;font-weight:700;font-size:18px;margin-bottom:8px;">Startup Notice</div>' +
         '<div style="color:#EDEFF3;font-size:13px;max-width:440px;line-height:1.6;margin-bottom:16px;">' +
         'Initial resource loading is taking longer than usual. If this persists, try reloading or clearing the local demo cache.' +
-        '</div>' +
+        '</div>' + errInfo +
         '<div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">' +
         '<button style="background:#FF2E7E;color:#fff;border:none;padding:10px 18px;border-radius:8px;font-weight:700;cursor:pointer;" onclick="location.reload()">Reload Page</button>' +
         '<button style="background:#232A36;color:#EDEFF3;border:1px solid #353E4F;padding:10px 18px;border-radius:8px;font-weight:600;cursor:pointer;" onclick="localStorage.clear();location.reload()">Clear Cache & Reload</button>' +
