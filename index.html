@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>TRIBE — Swipe Right on Talent</title>
+<meta name="description" content="TRIBE — evidence-based talent matching for hackathon teams." />
+
+<!--
+  ============================================================================
+  TRIBE — static, build-free deployment.
+
+  How this works (no npm install / Vite / Webpack required):
+    1. An "import map" below tells the browser where to fetch React,
+       lucide-react and recharts from (as real ES modules, via the esm.sh
+       CDN) whenever the app code writes `import ... from "react"` etc.
+    2. Babel Standalone (also loaded from a CDN) strips JSX syntax out of
+       assets/app.jsx *in the browser*, then runs the result as a native
+       ES module — so the original React source barely had to change.
+    3. This means the whole app is just static files. Open this file
+       through any local web server (see server.js) or deploy it as-is
+       to a static host such as Vercel.
+
+  Requirements: a modern browser (Chrome/Edge 105+, Firefox 108+,
+  Safari 16.4+) that supports <script type="importmap">, and an internet
+  connection the first time each CDN asset is fetched (browsers cache
+  them after that).
+  ============================================================================
+-->
+
+<!-- Import map: bare specifiers like "react" resolve to these CDN URLs. -->
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.3.1",
+    "react/": "https://esm.sh/react@18.3.1/",
+    "react-dom": "https://esm.sh/react-dom@18.3.1",
+    "react-dom/": "https://esm.sh/react-dom@18.3.1/",
+    "lucide-react": "https://esm.sh/lucide-react@0.383.0?external=react",
+    "recharts": "https://esm.sh/recharts@2.12.7?external=react,react-dom"
+  }
+}
+</script>
+
+<!-- In-browser JSX transform. No build step: this parses assets/app.jsx on load. -->
+<script src="https://unpkg.com/@babel/standalone@7.25.6/babel.min.js"></script>
+
+<style>
+  html, body { margin: 0; padding: 0; background: #0B0E12; }
+  #root-loading {
+    min-height: 100vh; display: flex; align-items: center; justify-content: center;
+    flex-direction: column; gap: 12px; color: #A6ADBB;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    text-align: center; padding: 24px;
+  }
+  #root-loading .spinner {
+    width: 28px; height: 28px; border-radius: 50%;
+    border: 3px solid #232A36; border-top-color: #FF2E7E;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  noscript {
+    display: block; padding: 40px; text-align: center; color: #EDEFF3;
+    font-family: sans-serif; background: #0B0E12;
+  }
+</style>
+</head>
+<body>
+
+<noscript>TRIBE requires JavaScript to run. Please enable it and reload the page.</noscript>
+
+<div id="root">
+  <!--
+    Shown until React mounts. If this message never disappears, the CDN
+    scripts above (esm.sh / unpkg) probably couldn't be reached — check
+    your internet connection, or see the note in README.md about fully
+    offline / air-gapped use.
+  -->
+  <div id="root-loading">
+    <div class="spinner"></div>
+    <div>Loading TRIBE…</div>
+    <div style="font-size:12px;color:#6E7686;max-width:320px;">
+      First load fetches React and a couple of small UI libraries from a CDN.
+      If this hangs, check your internet connection.
+    </div>
+  </div>
+</div>
+
+<script>
+  window.addEventListener('error', function(event) {
+    var loadingEl = document.getElementById('root-loading');
+    if (loadingEl) {
+      loadingEl.innerHTML = '<div style="color:#FF6B6B;font-weight:700;font-size:16px;margin-bottom:8px;">Startup Notice</div>' +
+        '<div style="color:#EDEFF3;font-size:13px;max-width:480px;line-height:1.6;margin-bottom:12px;">' +
+        (event.message || 'An error occurred while loading TRIBE.') + '</div>' +
+        '<button style="background:#FF2E7E;color:#fff;border:none;padding:8px 16px;border-radius:8px;font-weight:700;cursor:pointer;" onclick="location.reload()">Reload Page</button>';
+    }
+  });
+</script>
+
+<!-- Plain script (not Babel/module) so its path resolves normally against
+     this page — exposes window.TribeGithub for app.jsx to read from.
+     Must load before the app.jsx script below. -->
+<script src="./assets/services/githubService.js"></script>
+
+<!-- App source: real JSX, transformed in-browser, then executed as an ES module. -->
+<script type="text/babel" data-type="module" data-presets="react" src="./assets/app.jsx"></script>
+
+</body>
+</html>
